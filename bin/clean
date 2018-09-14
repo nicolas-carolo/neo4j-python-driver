@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-ROOT=$(dirname "$0")
+BIN=$(dirname "$0")
+ROOT=${BIN}/..
 
 rm -rf ${ROOT}/build ${ROOT}/dist ${ROOT}/docs/build ${ROOT}/*.egg-info ${ROOT}/.coverage ${ROOT}/.tox ${ROOT}/.cache ${ROOT}/.pytest_cache ${ROOT}/.benchmarks
 

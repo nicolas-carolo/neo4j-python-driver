@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+BIN=$(dirname "$0")
+ROOT=${BIN}/..
+TEST=${ROOT}/test
+RUN=${TEST}/integration/run
+
+ARGS="$*"
+PASSWORD="password"
+FAILED=0
+VERSIONS="3.5.0-alpha08 3.4.7 3.3.7 3.2.12"
+
+function write
+{
+    if [ "$(which figlet)" == "" ]
+    then
+        echo "$*"
+    else
+        figlet -t "$*"
+    fi
+}
+
+cd ${ROOT}
+pip install --upgrade --quiet pip -r test/requirements.txt
+if [ "$(which neoctrl-install)" == "" ]
+then
+    echo "Boltkit not included in test/requirements.txt"
+    exit 1
+fi
+
+write "Unit tests"
+coverage run --append -m pytest -v ${ARGS} test/unit
+
+write "Stub tests"
+coverage run --append -m pytest -v ${ARGS} test/stub
+
+for VERSION in ${VERSIONS}
+do
+    write "Integration tests"
+    write "(Neo4j ${VERSION})"
+    NEO4J="$(neoctrl-install -e ${VERSION} ${RUN})"
+    neoctrl-set-initial-password "${PASSWORD}" "${NEO4J}"
+    neoctrl-start "${NEO4J}"
+    coverage run --append -m pytest -v test/integration ${ARGS}
+    STATUS=$?
+    if [ ${STATUS} -ne 0 ]
+    then
+        FAILED=1
+    fi
+    neoctrl-stop "${NEO4J}"
+    rm -rf "${NEO4J}"
+done
+
+#write "Performance tests"
+#coverage run --append -m pytest -v ${ARGS} test/performance
+
+if [[ FAILED -eq 0 ]]
+then
+    exit 0
+else
+    exit 1
+fi

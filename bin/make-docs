@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-HOME=$(dirname $0)
+BIN=$(dirname "$0")
+ROOT=${BIN}/..
 
 pip install --upgrade sphinx
-make -C ${HOME}/docs html
+make -C ${ROOT}/docs html
 
 echo ""
-INDEX_FILE="${HOME}/docs/build/html/index.html"
+INDEX_FILE="${ROOT}/docs/build/html/index.html"
 echo "Documentation index file can be found at file://$(cd "$(dirname "${INDEX_FILE}")"; pwd)/$(basename "${INDEX_FILE}")"
